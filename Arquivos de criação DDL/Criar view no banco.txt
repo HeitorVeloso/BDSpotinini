@@ -1,0 +1,17 @@
+use spotinini
+GO
+
+CREATE VIEW view_dadosPlaylistUsuario as
+	SELECT p.nmPlaylist, u.usuario, m.nmMusica, m.urlMusica, m.urlImagem FROM Playlist p
+		INNER JOIN Usuario u on (p.usuario_id = u.usuario_id)
+		INNER JOIN MusicaPlaylist mp on(p.playlist_id = mp.playlist_id)
+		INNER JOIN Musica m on(m.musica_id = mp.musica_id);
+GO		
+
+
+CREATE VIEW view_dadosUsuario as
+	SELECT u.nmUsuario, p.autorizacao, pp.vlAssinatura, pp.nmDoPlano, pp.dtUltimoPagamento, pp.dtVencimento, dc.nrCartao, dc.nmCartao, dc.dtValidade, dc.codigoSeguranca FROM Usuario u
+		INNER JOIN PlanoPagamento pp on (pp.planoPagamento_id = u.planoPagamento_id)
+		INNER JOIN Permissao p on(p.permissao_id = u.permissao_id)
+		LEFT JOIN DadosCartao dc on(dc.dadosCartao_id = pp.dadosCartao_id);
+GO

@@ -1,0 +1,53 @@
+USE spotinini
+GO
+
+EXEC procedure_inserirNovoUsuario 'heitor', 'Heitor Veloso', '11406578606', '$2a$10$NNQezASHolAwnbEuKLn6OeZk0.4H8KEGqpnVt3upF1SyY.yjRnfl6', 'Administrador', 0.00, NULL, NULL, NULL, NULL, NULL, NULL;
+EXEC procedure_inserirNovoUsuario 'joao', 'Joao Assis', '11111111111', '$2a$10$NNQezASHolAwnbEuKLn6OeZk0.4H8KEGqpnVt3upF1SyY.yjRnfl6', 'Familia', 200.00, '2022-09-12', '2023-09-12', '1234567890123456', 'Joao Assis', '2025-12-31', '123';
+EXEC procedure_inserirNovoUsuario 'mariaEduarda', 'Maria Eduarda', '22222222222', '$2a$10$NNQezASHolAwnbEuKLn6OeZk0.4H8KEGqpnVt3upF1SyY.yjRnfl6', 'Individual', 30.00, '2022-09-12', '2022-10-12', '1234567890123456', 'Maria Eduarda', '2025-12-31', '123';
+EXEC procedure_inserirNovoUsuario 'duaLipa', 'Dua Lipa', '33333333333', '$2a$10$NNQezASHolAwnbEuKLn6OeZk0.4H8KEGqpnVt3upF1SyY.yjRnfl6', 'Artista', 0.00, NULL, NULL, NULL, NULL, NULL, NULL;
+EXEC procedure_inserirNovoUsuario 'axelRosesArtista', 'Axel Roses', '44444444444', '$2a$10$NNQezASHolAwnbEuKLn6OeZk0.4H8KEGqpnVt3upF1SyY.yjRnfl6', 'Artista', 0.00, NULL, NULL, NULL, NULL, NULL, NULL;
+EXEC procedure_inserirNovoUsuario 'axelRosesUsuario', 'Axel Roses', '44444444444', '$2a$10$NNQezASHolAwnbEuKLn6OeZk0.4H8KEGqpnVt3upF1SyY.yjRnfl6', 'Familia', 200.00, '2022-09-12', '2022-09-05', '1234567890123456', 'Axel Roses', '2025-12-31', '123';
+EXEC procedure_inserirNovoUsuario 'anaBeatriz', 'Ana Beatriz', '55555555555', '$2a$10$NNQezASHolAwnbEuKLn6OeZk0.4H8KEGqpnVt3upF1SyY.yjRnfl6', 'Gratuito', 0.00, NULL, NULL, NULL, NULL, NULL, NULL;
+EXEC procedure_inserirNovoUsuario 'heitorUsuario', 'Heitor Veloso', '11406578606', '$2a$10$NNQezASHolAwnbEuKLn6OeZk0.4H8KEGqpnVt3upF1SyY.yjRnfl6', 'Familia', 200.00, '2022-09-12', '2023-09-12', '1234567890123456', 'Heitor Veloso', '2025-12-31', '123';
+EXEC procedure_inserirNovoUsuario 'betina', 'Betina Vieira', '12345432123', '$2a$10$NNQezASHolAwnbEuKLn6OeZk0.4H8KEGqpnVt3upF1SyY.yjRnfl6', 'Administrador', 0.00, NULL, NULL, NULL, NULL, NULL, NULL;
+EXEC procedure_inserirNovoUsuario 'betina2', 'Betina Vieira', '12345432123', '$2a$10$NNQezASHolAwnbEuKLn6OeZk0.4H8KEGqpnVt3upF1SyY.yjRnfl6', 'Familia', 200.00, '2022-09-12', '2023-09-12', '1234567890123456', 'Betina Vieira', '2025-12-31', '123';
+EXEC procedure_inserirNovoUsuario 'luna', 'Luna Aparecida', '11111111111', '$2a$10$NNQezASHolAwnbEuKLn6OeZk0.4H8KEGqpnVt3upF1SyY.yjRnfl6', 'Gratuito', 0.00, NULL, NULL, NULL, NULL, NULL, NULL;
+EXEC procedure_inserirNovoUsuario 'mariaAparecida', 'Maria Aparecida', '66666666666', '$2a$10$NNQezASHolAwnbEuKLn6OeZk0.4H8KEGqpnVt3upF1SyY.yjRnfl6', 'Familia', 200.00, '2022-09-12', '2022-09-12', '1234567890123456', 'Maria Aparecida', '2025-12-31', '123';
+
+
+SELECT dbo.URL_VALIDO('http://teste.com')
+SELECT dbo.URL_VALIDO('http://teste.com/teste12345')
+SELECT dbo.URL_VALIDO('https://teste.com')
+SELECT dbo.URL_VALIDO('https://teste.com/teste12345')
+SELECT dbo.URL_VALIDO('httx://teste.com/teste12345')
+SELECT dbo.URL_VALIDO('httpx://teste.com/teste12345')
+SELECT dbo.URL_VALIDO('https://teste.cm/teste12345')
+
+INSERT INTO Playlist(nmPlaylist,usuario_id) VALUES('Romantica',1) ;
+INSERT INTO Playlist(nmPlaylist,usuario_id) VALUES('Romantica',2) ;
+INSERT INTO Playlist(nmPlaylist,usuario_id) VALUES('Aleatorio',1) ;
+INSERT INTO Playlist(nmPlaylist,usuario_id) VALUES('Teste',6) ;
+
+INSERT INTO Musica(nmMusica,urlMusica,urlImagem) VALUES('You Could Be Mine', 'http://musica.com/youcoldbemine', 'http://imagem.com/youcoldbemine');
+INSERT INTO Musica(nmMusica,urlMusica,urlImagem) VALUES('November Rain', 'http://musica.com/novemberrain', 'http://imagem.com/novemberrain');
+INSERT INTO Musica(nmMusica,urlMusica,urlImagem) VALUES('Satisfaction', 'http://musica.com/satisfaction', 'http://imagem.com/satisfaction');
+INSERT INTO Musica(nmMusica,urlMusica,urlImagem) VALUES('Sera', 'http://musica.com/sera', 'http://imagem.com/sera');
+INSERT INTO Musica(nmMusica,urlMusica,urlImagem) VALUES('O Papa é Pop', 'http://musica.com/opapaepop', 'http://imagem.com/opapaepop');
+INSERT INTO Musica(nmMusica,urlMusica,urlImagem) VALUES('Pra Ser Sincero', 'http://musica.com/prasersincero', 'http://imagem.com/prasersincero');
+
+INSERT INTO MusicaPlaylist(playlist_id,musica_id) VALUES(1,1);
+INSERT INTO MusicaPlaylist(playlist_id,musica_id) VALUES(2,1);
+INSERT INTO MusicaPlaylist(playlist_id,musica_id) VALUES(2,4);
+INSERT INTO MusicaPlaylist(playlist_id,musica_id) VALUES(3,2);
+INSERT INTO MusicaPlaylist(playlist_id,musica_id) VALUES(3,5);
+INSERT INTO MusicaPlaylist(playlist_id,musica_id) VALUES(3,3);
+INSERT INTO MusicaPlaylist(playlist_id,musica_id) VALUES(4,1);
+INSERT INTO MusicaPlaylist(playlist_id,musica_id) VALUES(4,2);
+INSERT INTO MusicaPlaylist(playlist_id,musica_id) VALUES(4,5);
+INSERT INTO MusicaPlaylist(playlist_id,musica_id) VALUES(4,6);
+
+SELECT * FROM view_dadosPlaylistUsuario;
+SELECT * FROM view_dadosUsuario;
+
+EXEC procedure_modificarPermissaoDataInvalida;
+SELECT * FROM view_dadosUsuario;

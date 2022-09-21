@@ -1,0 +1,151 @@
+use spotinini
+GO
+
+CREATE FUNCTION CPF_VALIDO(@CPF VARCHAR(11))
+RETURNS BIT
+AS
+BEGIN
+  DECLARE @INDICE INT,
+          @SOMA INT,
+          @DIG1 INT,
+          @DIG2 INT,
+          @CPF_TEMP VARCHAR(11),
+          @DIGITOS_IGUAIS CHAR(1),
+          @RESULTADO BIT
+          
+  SET @RESULTADO = 0
+
+  /*
+      Verificando se os digitos são iguais
+      A Principio CPF com todos o números iguais são Inválidos
+      apesar de validar o Calculo do digito verificado
+      EX: O CPF 00000000000 é inválido, mas pelo calculo
+      Validaria
+  */
+
+/*
+
+  SET @CPF_TEMP = SUBSTRING(@CPF,1,1)
+
+  SET @INDICE = 1
+  SET @DIGITOS_IGUAIS = 'S'
+
+  WHILE (@INDICE <= 11)
+  BEGIN
+    IF SUBSTRING(@CPF,@INDICE,1) <> @CPF_TEMP
+      SET @DIGITOS_IGUAIS = 'N'
+    SET @INDICE = @INDICE + 1
+  END;
+*/
+	SET @DIGITOS_IGUAIS = 'N'
+  --Caso os digitos não sejão todos iguais Começo o calculo do digitos
+  IF @DIGITOS_IGUAIS = 'N'
+  BEGIN
+    --Cálculo do 1º dígito
+    SET @SOMA = 0
+    SET @INDICE = 1
+    WHILE (@INDICE <= 9)
+    BEGIN
+      SET @Soma = @Soma + CONVERT(INT,SUBSTRING(@CPF,@INDICE,1)) * (11 - @INDICE);
+      SET @INDICE = @INDICE + 1
+    END
+
+    SET @DIG1 = 11 - (@SOMA % 11)
+
+    IF @DIG1 > 9
+      SET @DIG1 = 0;
+
+    -- Cálculo do 2º dígito }
+    SET @SOMA = 0
+    SET @INDICE = 1
+    WHILE (@INDICE <= 10)
+    BEGIN
+      SET @Soma = @Soma + CONVERT(INT,SUBSTRING(@CPF,@INDICE,1)) * (12 - @INDICE);
+      SET @INDICE = @INDICE + 1
+    END
+
+    SET @DIG2 = 11 - (@SOMA % 11)
+
+    IF @DIG2 > 9
+      SET @DIG2 = 0;
+
+    -- Validando
+    IF (@DIG1 = SUBSTRING(@CPF,LEN(@CPF)-1,1)) AND (@DIG2 = SUBSTRING(@CPF,LEN(@CPF),1))
+      SET @RESULTADO = 1
+    ELSE
+      SET @RESULTADO = 0
+  END
+  RETURN @RESULTADO
+END
+GO
+
+CREATE FUNCTION DATA_VALIDA(@dt date)
+RETURNS BIT
+AS
+BEGIN
+	DECLARE @dtMais10Dias date;
+	SET @dtMais10Dias = DATEADD (dd , 10 , @dt)
+	IF GETDATE()>@dtMais10Dias
+	BEGIN		
+		RETURN 0
+	END	
+	RETURN 1	
+END
+GO
+
+CREATE FUNCTION URL_VALIDO(@url VARCHAR(200))
+RETURNS char(20)
+AS
+BEGIN
+	DECLARE @comecaComHttp char(7);	
+	DECLARE @comecaComHttps char(8);
+	IF LEN(@url) <20
+	BEGIN
+		RETURN 'entrou tamanho'
+	END	
+	SET @comecaComHttp = SUBSTRING(@URL,1,7);
+	SET @comecaComHttps = SUBSTRING(@URL,1,8);
+	IF @comecaComHttp <> 'http://' and @comecaComHttps <> 'https://'
+	BEGIN
+		RETURN 'sem http ou https'
+	END
+	DECLARE @existePontoCom varchar(4);
+	DECLARE @indice int;
+	DECLARE	@contador int;
+	IF @comecaComHttp = 'http://'
+	BEGIN
+		SET @indice = 8;
+	END
+	ELSE BEGIN
+		SET @indice = 9;
+	END
+	SET @contador = 0;
+
+	WHILE (@indice <= LEN(@url))
+	BEGIN
+		DECLARE @charAtual char(1);
+		SET @charAtual = SUBSTRING(@URL,@indice,1);		
+		IF @charAtual = '.'
+		BEGIN			
+			SET @contador = 1;
+			SET @existePontoCom = '.';
+		END
+		ELSE IF @contador>0 and @contador<4
+		BEGIN			
+			SET @contador = @contador+1;			 
+			SET @existePontoCom = CONCAT(@existePontoCom,@charAtual);			
+		END
+		ELSE IF @contador=4
+		BEGIN
+			IF @existePontoCom='.com'
+			BEGIN
+				RETURN 'existe .com'
+			END
+			SET @contador = 0
+			SET @existePontoCom='';
+		END
+		SET @indice = @indice+1;
+	END
+	RETURN 'não achou .com'
+END;
+GO

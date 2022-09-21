@@ -1,0 +1,100 @@
+CREATE DATABASE spotinini
+GO
+
+use spotinini
+GO
+
+create table Genero(
+genero_id BIGINT PRIMARY KEY IDENTITY,
+nmGenero VARCHAR(80) NOT NULL)
+GO
+
+create table Artista(
+artista_id BIGINT PRIMARY KEY IDENTITY,
+nmArtista VARCHAR(80) NOT NULL)
+GO
+
+create table Musica(
+musica_id BIGINT PRIMARY KEY IDENTITY,
+genero_id BIGINT,
+CONSTRAINT fk_genero_tb_musica FOREIGN KEY(genero_id) REFERENCES Genero (genero_id),
+nmMusica VARCHAR(50) NOT NULL,
+urlImagem VARCHAR(200) NOT NULL,
+urlMusica VARCHAR(200) NOT NULL)
+GO
+
+create table DadosCartao(
+dadosCartao_id BIGINT PRIMARY KEY IDENTITY,
+nrCartao CHAR(16) NOT NULL,
+nmCartao VARCHAR(80) NOT NULL,
+dtValidade DATE NOT NULL,
+codigoSeguranca CHAR(3) NOT NULL)
+GO
+
+create table PlanoPagamento(
+planoPagamento_id BIGINT PRIMARY KEY IDENTITY,
+dadosCartao_id BIGINT,
+CONSTRAINT fk_dadosCartao_tb_planoPagamento FOREIGN KEY(dadosCartao_id) REFERENCES DadosCartao (dadosCartao_id),
+vlAssinatura DECIMAL(10,2),
+nmDoPlano VARCHAR(20) NOT NULL,
+dtUltimoPagamento DATE,
+dtVencimento DATE)
+GO
+
+create table Permissao(
+permissao_id BIGINT PRIMARY KEY IDENTITY,
+autorizacao VARCHAR(20))
+GO
+
+create table Usuario(
+usuario_id BIGINT PRIMARY KEY IDENTITY,
+permissao_id BIGINT NOT NULL,
+CONSTRAINT fk_permissao_tb_usuario FOREIGN KEY(permissao_id) REFERENCES Permissao (permissao_id),
+planoPagamento_id BIGINT NOT NULL,
+CONSTRAINT fk_planoPagamento_tb_usuario FOREIGN KEY(planoPagamento_id) REFERENCES PlanoPagamento (planoPagamento_id),
+usuario VARCHAR(20) NOT NULL,
+nmUsuario VARCHAR(80) NOT NULL,
+cpfUsuario CHAR(11) NOT NULL,
+senha CHAR(200) NOT NULL,
+dtCriacao DATE NOT NULL,
+dtExclusao DATE,
+dtUltimoAcesso DATE,
+enable BIT)
+GO
+
+create table Playlist(
+playlist_id BIGINT PRIMARY KEY IDENTITY,
+usuario_id BIGINT,
+CONSTRAINT fk_usuario_tb_playlist FOREIGN KEY(usuario_id) REFERENCES Usuario (usuario_id),
+nmPlaylist VARCHAR(80) NOT NULL)
+GO
+
+create table Favorito(
+favorito_id BIGINT PRIMARY KEY IDENTITY,
+usuario_id BIGINT NOT NULL,
+CONSTRAINT fk_usuario_tb_favorito FOREIGN KEY(usuario_id) REFERENCES Usuario (usuario_id))
+GO
+
+create table MusicaArtista(
+musicaArtista_id BIGINT PRIMARY KEY IDENTITY,
+musica_id BIGINT,
+artista_id BIGINT,
+CONSTRAINT fk_musica_tb_musicaArtista FOREIGN KEY(musica_id) REFERENCES Musica (musica_id),
+CONSTRAINT fk_artista_tb_musicaArtista FOREIGN KEY(artista_id) REFERENCES Artista (artista_id))
+GO
+
+create table MusicaPlaylist(
+musicaPlaylist_id BIGINT PRIMARY KEY IDENTITY,
+musica_id BIGINT,
+playlist_id BIGINT,
+CONSTRAINT fk_musica_tb_musicaPlaylist FOREIGN KEY(musica_id) REFERENCES Musica (musica_id),
+CONSTRAINT fk_playlist_tb_musicaPlaylist FOREIGN KEY(playlist_id) REFERENCES Playlist (playlist_id))
+GO
+
+create table MusicaFavorito(
+musicaFavorito_id BIGINT PRIMARY KEY IDENTITY,
+musica_id BIGINT,
+favorito_id BIGINT,
+CONSTRAINT fk_musica_tb_musicaFavorito FOREIGN KEY(musica_id) REFERENCES Musica (musica_id),
+CONSTRAINT fk_favorito_tb_musicaFavorito FOREIGN KEY(favorito_id) REFERENCES Favorito (favorito_id))
+GO

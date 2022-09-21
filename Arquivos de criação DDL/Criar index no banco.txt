@@ -1,0 +1,13 @@
+use spotinini
+GO
+
+CREATE INDEX index_musica ON Musica(nmMusica)
+GO
+CREATE INDEX index_artista ON Artista(nmArtista)
+GO
+CREATE INDEX index_genero ON Genero(nmGenero)
+GO
+CREATE INDEX index_playlist ON Playlist(usuario_id)
+GO
+CREATE INDEX index_usuario ON Usuario(usuario)
+GO

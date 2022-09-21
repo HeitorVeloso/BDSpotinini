@@ -1,0 +1,162 @@
+use spotinini
+GO
+
+CREATE PROCEDURE procedure_inserirNovoUsuario
+	@usuario VARCHAR(20),
+	@nmUsuario VARCHAR(80),
+	@cpfUsuario CHAR(11),
+	@senha CHAR(200),
+	@nmDoPlano VARCHAR(20),
+	@vlAssinatura DECIMAL(10,2),
+	@dtUltimoPagamento DATE,
+	@dtVencimento DATE,
+	@nrCartao CHAR(16),
+	@nmCartao VARCHAR(80),
+	@dtValidade DATE,
+	@codigoSeguranca CHAR(3)
+AS
+BEGIN
+	DECLARE	@verificarExisteUsuario BIGINT;
+	DECLARE @verificarExisteCPF BIGINT;
+	DECLARE @verificarErro BIT;
+	
+	SELECT @verificarErro = 0;
+	
+	SELECT @verificarExisteUsuario = usuario_id from Usuario where usuario = @usuario;
+	IF @verificarExisteUsuario > 0
+	BEGIN
+		SELECT 'O usuário já existe! Gravação não realizada' as retorno;
+	END
+	ELSE BEGIN
+		SELECT @verificarExisteCPF = usuario_id from Usuario where cpfUsuario = @cpfUsuario;			
+		IF @verificarExisteCPF > 0
+		BEGIN
+			DECLARE @nmDoPlanoTemp VARCHAR(15);
+			SELECT @nmDoPlanoTemp = nmDoPlano FROM PlanoPagamento p
+				INNER JOIN Usuario u ON (p.planoPagamento_id = u.planoPagamento_id)
+				where @verificarExisteCPF = u.usuario_id;
+			IF @nmDoPlano = 'Artista' 
+			BEGIN
+				IF @nmDoPlanoTemp = 'Artista'
+				BEGIN
+					SELECT @verificarErro = 1;
+					SELECT 'Já existe este CPF e/ou o tipo do plano parecido! Gravação não realizada' as retorno;					
+				END			
+			END
+			ELSE BEGIN
+				IF @nmDoPlanoTemp <> 'Artista'
+				BEGIN
+					SELECT @verificarErro = 1;
+					SELECT 'Já existe este CPF e/ou o tipo do plano parecido! Gravação não realizada' as retorno;					
+				END
+			END
+		END
+		IF @verificarErro = 0
+		BEGIN
+			DECLARE @verificarCPFValido BIT;
+			SELECT @verificarCPFValido = dbo.CPF_VALIDO(@cpfUsuario);
+			IF @verificarCPFValido = 0
+			BEGIN
+				SELECT 'CPF inválido! Gravação não realizada' as retorno;				
+			END
+			ELSE BEGIN
+				BEGIN TRY
+					BEGIN TRANSACTION transacao
+						DECLARE @novoDadosCartao_id BIGINT;
+						DECLARE @novoPlanoPagamento_id BIGINT;
+						DECLARE @novoPermissao_id BIGINT;
+						DECLARE @novoUsuario_id BIGINT;
+						DECLARE @autorizacao varchar(20);
+						IF @nmDoPlano = 'Gratuito' or @nmDoPlano = 'Artista' or @nmDoPlano = 'Administrador'
+						BEGIN					
+							INSERT INTO PlanoPagamento(dadosCartao_id,vlAssinatura,nmDoPlano,dtUltimoPagamento,dtVencimento)
+								VALUES(NULL,0.00,@nmDoPlano,NULL,NULL);
+							SELECT  @novoPlanoPagamento_id = IDENT_CURRENT('PlanoPagamento');					
+							IF @nmDoPlano = 'Artista'
+							BEGIN
+								SELECT @autorizacao = 'Role_Artista'
+							END
+							ELSE IF @nmDoPlano = 'Administrador' 
+							BEGIN
+								SELECT @autorizacao = 'Role_Administrador'					
+							END
+							ELSE BEGIN
+								SELECT @autorizacao = 'Role_Gratuito';					
+							END
+						END				 
+						ELSE BEGIN
+							SELECT @autorizacao = 'Role_Usuario'					
+							INSERT INTO DadosCartao(nrCartao, nmCartao, dtValidade, codigoSeguranca)
+								VALUES(@nrCartao, @nmCartao, @dtValidade, @codigoSeguranca)
+							SELECT  @novoDadosCartao_id = IDENT_CURRENT('DadosCartao');
+							INSERT INTO PlanoPagamento(dadosCartao_id, vlAssinatura, nmDoPlano, dtUltimoPagamento, dtVencimento)
+								VALUES(@novoDadosCartao_id, @vlAssinatura, @nmDoPlano, @dtUltimoPagamento, @dtVencimento);
+							SELECT  @novoPlanoPagamento_id = IDENT_CURRENT('PlanoPagamento');
+						END
+						INSERT INTO Permissao(autorizacao)
+							VALUES(@autorizacao)				
+						SELECT  @novoPermissao_id = IDENT_CURRENT('Permissao');
+						INSERT INTO Usuario(permissao_id, planoPagamento_id, usuario, nmUsuario, cpfUsuario, senha, dtCriacao, dtExclusao, dtUltimoAcesso, enable)
+							VALUES(@novoPermissao_id, @novoPlanoPagamento_id, @usuario, @nmUsuario, @cpfUsuario, @senha, GetDATE(), NULL, NULL, 1);
+						SELECT IDENT_CURRENT('Usuario') AS retorno;						
+					COMMIT TRANSACTION transacao;					
+				END TRY
+				BEGIN CATCH
+					select ERROR_MESSAGE() as retorno;
+					ROLLBACK TRANSACTION transacao;						
+				END CATCH
+			END
+		END
+	END
+END;
+GO
+
+CREATE PROCEDURE procedure_modificarPermissaoDataInvalida
+AS
+BEGIN
+	DECLARE cursor1 CURSOR FOR
+		SELECT planoPagamento_id, dtVencimento FROM PlanoPagamento;
+	DECLARE @planoPagamento_idTemp BIGINT;
+	DECLARE @dtTemp DATE;
+	OPEN cursor1
+	FETCH NEXT FROM cursor1 
+	INTO @planoPagamento_idTemp,@dtTemp
+	-- Percorrendo linhas do cursor (enquanto houverem)
+WHILE @@FETCH_STATUS = 0
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+IF @dtTemp<GETDATE()
+BEGIN
+	BEGIN TRANSACTION transacao
+		DECLARE @permissao_idTemp BIGINT;
+		DECLARE @usuario_idTemp BIGINT;
+		DECLARE @nmUsuarioTemp VARCHAR(20);
+		SELECT @permissao_idTemp = p.permissao_id, @usuario_idTemp = u.usuario_id, @nmUsuarioTemp=u.nmUsuario FROM Usuario u
+			INNER JOIN Permissao p on (u.permissao_id = p.permissao_id)
+			WHERE u.planoPagamento_id = @planoPagamento_idTemp;
+		 
+		UPDATE Permissao SET autorizacao = 'Role_Gratuito' WHERE permissao_id = @permissao_idTemp;
+		IF dbo.DATA_VALIDA(@dtTemp) = 0
+		BEGIN 
+			COMMIT TRANSACTION transacao;
+			print 'entrou commit';
+			SELECT 'Cliente ID: ' + CAST(@usuario_idTemp as VARCHAR(12)) + ' de usuario: ' + @nmUsuarioTemp + ' alterado com sucesso' AS Retorno			
+		END
+		ELSE BEGIN
+			print 'entrou rolback';
+			SELECT 'Cliente ID: ' + CAST(@usuario_idTemp as VARCHAR(12)) + ' de usuario: ' + @nmUsuarioTemp + ' ainda tem alguns dias' AS Retorno				
+			ROLLBACK TRANSACTION transacao;			
+		END
+END 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @planoPagamento_idTemp,@dtTemp
+END
+ 
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1	
+END
+GO
